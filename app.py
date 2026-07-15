@@ -20,7 +20,16 @@ def create_app(database_path=None):
 
     @app.get("/api/jobs")
     def jobs():
-        return jsonify(app.store.list_jobs(request.args.to_dict()))
+        multi_keys = {"work_field", "location", "hire_type", "education", "employment_type"}
+        filters = {}
+        for key in request.args.keys():
+            values = request.args.getlist(key)
+            filters[key] = values if key in multi_keys or len(values) > 1 else values[0]
+        return jsonify(app.store.list_jobs(filters))
+
+    @app.get("/api/filter-options")
+    def filter_options():
+        return jsonify(app.store.filter_options())
 
     @app.get("/api/jobs/<external_id>")
     def job_detail(external_id):

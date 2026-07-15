@@ -1,9 +1,26 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>공공채용 OS</title><link rel="stylesheet" href="/static/style.css"></head><body>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>공공채용 OS</title><link rel="stylesheet" href="/static/style.css"><link rel="stylesheet" href="/static/multifilter.css"></head><body>
 <aside class="sidebar"><a class="logo" href="#">PUBLIC<span>JOB</span></a><nav><button class="nav active" data-view="all">전체 공고</button><button class="nav" data-view="applied">내 지원현황</button><button class="nav" data-view="filters">저장 필터</button></nav><div class="source-note"><b>공식 데이터 우선</b><p>JOB-ALIO 공고와 ALIO 보수 근거를 분리해 표시합니다.</p></div></aside>
 <main><header><div><p class="kicker">PUBLIC CAREER OPERATING SYSTEM</p><h1>공공채용 <em>한 화면 비교</em></h1><p>공기업·공공기관 공고를 수집하고 직무별 채용 인원, 기간, 일정 진행 방향과 성과급 제외 급여 근거를 함께 봅니다.</p></div><button id="sync" class="primary">최신 공고 가져오기 <span>↻</span></button></header>
 <section class="stats"><article><small>수집 공고</small><strong id="stat-total">0</strong><span>JOB-ALIO 기준</span></article><article><small>진행중</small><strong id="stat-active">0</strong><span>지원 가능한 공고</span></article><article><small>공개 채용인원</small><strong id="stat-headcount">0</strong><span>진행 공고 합계</span></article><article><small>내 지원현황</small><strong id="stat-applied">0</strong><span>따로 관리 중</span></article></section>
 <section class="workspace"><div class="section-head"><div><p class="kicker" id="view-kicker">ALL OPENINGS</p><h2 id="view-title">전체 채용공고</h2></div><p id="result-count">0개 공고</p></div>
-<form id="search-form" class="filters"><input name="q" placeholder="기관·직무·NCS 검색"><select name="location"><option value="">전체 지역</option><option>서울</option><option>경기</option><option>인천</option><option>대전</option><option>부산</option><option>충남</option><option>경남</option></select><select name="hire_type"><option value="">신입·경력 전체</option><option>신입</option><option>경력</option><option>신입+경력</option></select><select name="employment_type"><option value="">고용형태 전체</option><option>정규직</option><option>무기계약직</option><option>비정규직</option><option>청년인턴(체험형)</option></select><button>필터 적용</button><button type="button" id="save-filter" class="ghost">현재 필터 저장</button></form>
+<form id="search-form" class="filters multi-mode">
+  <input name="q" placeholder="기관·직무·NCS 검색">
+  <div class="multi-filter-row">
+    <details class="multi-filter" data-filter="work_field"><summary><span>직무</span><b>전체</b></summary><div class="option-list" data-options="work_field"></div></details>
+    <details class="multi-filter" data-filter="location"><summary><span>지역</span><b>전체</b></summary><div class="option-list" data-options="location"></div></details>
+    <details class="multi-filter" data-filter="hire_type"><summary><span>신입 여부</span><b>전체</b></summary><div class="option-list" data-options="hire_type"></div></details>
+    <details class="multi-filter" data-filter="education"><summary><span>학력</span><b>전체</b></summary><div class="option-list education-options">
+      <label><input type="checkbox" name="education" value="무관"><span>무관</span></label>
+      <label><input type="checkbox" name="education" value="고졸"><span>고졸</span></label>
+      <label><input type="checkbox" name="education" value="전문학사"><span>전문학사</span></label>
+      <label><input type="checkbox" name="education" value="학사"><span>학사</span></label>
+      <label><input type="checkbox" name="education" value="석사"><span>석사</span></label>
+      <label><input type="checkbox" name="education" value="박사"><span>박사</span></label>
+    </div></details>
+  </div>
+  <select name="employment_type"><option value="">고용형태 전체</option><option>정규직</option><option>무기계약직</option><option>비정규직</option><option>청년인턴(체험형)</option></select>
+  <button>필터 적용</button><button type="button" id="clear-filter" class="ghost">선택 초기화</button><button type="button" id="save-filter" class="ghost">현재 필터 저장</button>
+</form>
 <div id="saved-filters" class="saved-filters" hidden></div>
 <div class="table-wrap"><table><thead><tr><th>기관 / 공고</th><th>직무 / 구분</th><th>채용 인원</th><th>접수기간 / 진행</th><th>성과급 제외 월 고정급</th><th>관리</th></tr></thead><tbody id="jobs"></tbody></table><div id="empty" class="empty" hidden><b>표시할 공고가 없습니다.</b><p>최신 공고를 가져오거나 필터 조건을 변경하세요.</p></div></div>
 </section></main>

@@ -42,3 +42,25 @@ def test_store_saves_reusable_filter(tmp_path):
 
     saved = store.list_filters()
     assert saved == [{"id": filter_id, "name": "서울 전산 신입", "criteria": {"q": "전산", "location": "서울", "hire_type": "신입"}}]
+
+
+def test_store_supports_multiple_values_per_filter_and_education_categories(tmp_path):
+    store = Store(tmp_path / "jobs.db")
+    bachelor = job("1", "전산직 학사 채용")
+    bachelor["education"] = "대졸(2~3년),대졸(4년),석사"
+    admin = job("2", "행정직 고졸 채용")
+    admin.update({"work_field": "행정직", "location": "경기", "hire_type": "경력", "education": "고졸"})
+    doctor = job("3", "연구직 박사 채용")
+    doctor.update({"work_field": "연구직", "location": "대전", "hire_type": "경력", "education": "박사"})
+    store.upsert_jobs([bachelor, admin, doctor])
+
+    results = store.list_jobs({
+        "work_field": ["전산직", "행정직"],
+        "location": ["서울", "경기"],
+        "hire_type": ["신입", "경력"],
+        "education": ["학사", "고졸"],
+    })
+
+    assert {item["external_id"] for item in results} == {"1", "2"}
+    assert {item["external_id"] for item in store.list_jobs({"education": ["전문학사"]})} == {"1"}
+    assert store.list_jobs({"education": ["무관"]}) == []

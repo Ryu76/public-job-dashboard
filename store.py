@@ -83,14 +83,50 @@ class Store:
     def list_jobs(self, filters: dict | None = None) -> list[dict]:
         filters = filters or {}
         clauses, params = [], []
+
+        def values_for(key):
+            value = filters.get(key)
+            if value is None or value == "":
+                return []
+            return [str(item).strip() for item in (value if isinstance(value, list) else [value]) if str(item).strip()]
+
         q = (filters.get("q") or "").strip()
         if q:
             clauses.append("(j.title LIKE ? OR j.organization LIKE ? OR j.work_field LIKE ? OR j.ncs LIKE ?)")
             params.extend([f"%{q}%"] * 4)
-        for key, column in (("location", "location"), ("employment_type", "employment_type"), ("hire_type", "hire_type"), ("source_status", "source_status")):
-            if filters.get(key):
-                clauses.append(f"j.{column} LIKE ?")
-                params.append(f"%{filters[key]}%")
+
+        for key, column in (("work_field", "work_field"), ("location", "location"), ("hire_type", "hire_type")):
+            values = values_for(key)
+            if values:
+                clauses.append("(" + " OR ".join(f"j.{column} LIKE ?" for _ in values) + ")")
+                params.extend(f"%{value}%" for value in values)
+
+        for key, column in (("employment_type", "employment_type"), ("source_status", "source_status")):
+            values = values_for(key)
+            if values:
+                clauses.append("(" + " OR ".join(f"j.{column} LIKE ?" for _ in values) + ")")
+                params.extend(f"%{value}%" for value in values)
+
+        education_patterns = {
+            "무관": ["%무관%"],
+            "고졸": ["%고졸%"],
+            "전문학사": ["%전문학사%", "%전문대%", "%2~3년%", "%2년제%", "%3년제%"],
+            "학사": ["%대졸(4년)%", "학사", "%4년제%"],
+            "석사": ["%석사%"],
+            "박사": ["%박사%"],
+        }
+        selected_education = values_for("education")
+        if selected_education:
+            education_parts = []
+            for category in selected_education:
+                patterns = education_patterns.get(category, [f"%{category}%"])
+                category_parts = []
+                for pattern in patterns:
+                    operator = "LIKE" if "%" in pattern else "="
+                    category_parts.append(f"j.education {operator} ?")
+                    params.append(pattern)
+                education_parts.append("(" + " OR ".join(category_parts) + ")")
+            clauses.append("(" + " OR ".join(education_parts) + ")")
         if filters.get("applied") in {True, "true", "1", 1}:
             clauses.append("a.job_id IS NOT NULL")
         where = " WHERE " + " AND ".join(clauses) if clauses else ""
@@ -128,6 +164,19 @@ class Store:
     def delete_filter(self, filter_id: int):
         with self.connect() as db:
             db.execute("DELETE FROM saved_filters WHERE id=?", (filter_id,))
+
+    def filter_options(self) -> dict:
+        with self.connect() as db:
+            def distinct(column):
+                return [row[0] for row in db.execute(
+                    f"SELECT DISTINCT {column} FROM jobs WHERE {column} IS NOT NULL AND TRIM({column}) != '' ORDER BY {column}"
+                )]
+            return {
+                "work_field": distinct("work_field"),
+                "location": distinct("location"),
+                "hire_type": distinct("hire_type"),
+                "education": ["무관", "고졸", "전문학사", "학사", "석사", "박사"],
+            }
 
     def stats(self) -> dict:
         with self.connect() as db:

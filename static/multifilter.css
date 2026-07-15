@@ -1,0 +1,21 @@
+/* Multi-select filters */
+.filters.multi-mode{grid-template-columns:minmax(220px,2fr) minmax(150px,1fr) auto auto auto;align-items:start}
+.multi-filter-row{grid-column:1/-1;grid-row:2;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.multi-filter{position:relative;min-width:0}
+.multi-filter summary{list-style:none;min-height:48px;background:#fff;border:1px solid var(--line);padding:8px 38px 8px 13px;display:flex;flex-direction:column;justify-content:center;cursor:pointer;position:relative;user-select:none}
+.multi-filter summary::-webkit-details-marker{display:none}
+.multi-filter summary:after{content:'+';position:absolute;right:14px;top:50%;transform:translateY(-50%);font:500 17px 'DM Mono';color:var(--muted)}
+.multi-filter[open] summary:after{content:'−'}
+.multi-filter summary span{font-size:9px;color:var(--muted);font-weight:700;letter-spacing:.04em}
+.multi-filter summary b{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.multi-filter.selected summary{border-color:var(--green);box-shadow:inset 3px 0 0 var(--green)}
+.multi-filter.selected summary b{color:var(--green)}
+.option-list{position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:30;background:#fff;border:1px solid var(--ink);box-shadow:5px 6px 0 rgba(16,25,35,.16);padding:8px;max-height:260px;overflow:auto;display:grid;gap:2px}
+.option-list label{display:flex;align-items:center;gap:9px;padding:9px 8px;cursor:pointer;font-size:12px;border-radius:2px}
+.option-list label:hover{background:#edf7f4}
+.option-list input{width:16px;height:16px;accent-color:var(--green);margin:0;flex:0 0 auto}
+.option-list input:checked+span{font-weight:800;color:var(--green)}
+.education-options{grid-template-columns:1fr 1fr}
+.filters.multi-mode>.ghost{white-space:nowrap}
+@media(max-width:1100px){.filters.multi-mode{grid-template-columns:1fr 1fr auto}.filters.multi-mode>input{grid-column:1/2}.filters.multi-mode>select{grid-column:2/3}.multi-filter-row{grid-template-columns:repeat(2,minmax(0,1fr));grid-row:2}.filters.multi-mode>button{grid-row:3}}
+@media(max-width:680px){.filters.multi-mode{display:grid;grid-template-columns:1fr 1fr}.filters.multi-mode>input,.filters.multi-mode>select,.multi-filter-row{grid-column:1/-1}.multi-filter-row{position:relative;grid-row:auto;grid-template-columns:1fr}.filters.multi-mode>button{grid-row:auto}.option-list{position:relative;top:0;box-shadow:none;border-top:0}.multi-filter[open] summary{border-color:var(--ink)}}
